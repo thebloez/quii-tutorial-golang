@@ -1,30 +1,47 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"time"
 )
 
 const finalWord string = "Go!"
 const countDownStart int = 3
 
+type Sleeper interface {
+	Sleep()
+}
+
+type SpySleeper struct {
+	Calls int
+}
+
+func (s *SpySleeper) Sleep() {
+	s.Calls++
+}
+
+type DefaultSleeper struct {
+}
+
+func (d *DefaultSleeper) Sleep() {
+	time.Sleep(1 * time.Second)
+}
+
 func main() {
-	CountdownInt(4)
+	sleeper := &DefaultSleeper{}
+	Countdown(os.Stdout, sleeper)
 }
 
-func CountdownInt(a int) {
-	for ; a > 0; a-- {
-		fmt.Printf("%d\n", a)
-		time.Sleep(1 / 2 * time.Second)
+func Countdown(out io.Writer, sleeper Sleeper) {
+	for i := countDownStart; i > 0; i-- {
+		sleeper.Sleep()
 	}
-	fmt.Println("Go!")
-}
-
-func Countdown(out *bytes.Buffer) {
 	for i := countDownStart; i > 0; i-- {
 		fmt.Fprintln(out, i)
-		time.Sleep(1 * time.Second)
 	}
+
+	sleeper.Sleep()
 	fmt.Fprint(out, finalWord)
 }
