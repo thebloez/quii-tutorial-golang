@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+func main() {
+	sleeper := &DefaultSleeper{}
+	Countdown(os.Stdout, sleeper)
+}
+
 const finalWord string = "Go!"
 const countDownStart int = 3
 
@@ -29,10 +34,21 @@ func (d *DefaultSleeper) Sleep() {
 	time.Sleep(1 * time.Second)
 }
 
-func main() {
-	sleeper := &DefaultSleeper{}
-	Countdown(os.Stdout, sleeper)
+type CountdownSpy struct {
+	Calls []string
 }
+
+func (s *CountdownSpy) Sleep() {
+	s.Calls = append(s.Calls, sleep)
+}
+
+func (s *CountdownSpy) Write(p []byte) (n int, err error) {
+	s.Calls = append(s.Calls, write)
+	return
+}
+
+const sleep string = "sleep"
+const write string = "write"
 
 func Countdown(out io.Writer, sleeper Sleeper) {
 	for i := countDownStart; i > 0; i-- {
